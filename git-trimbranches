@@ -31,9 +31,10 @@ echo "Found $merged_remote_branch_count branches on origin which are already con
 echo
 
 for branch in $remote_branches; do
+  sha=$(git rev-parse --short "$branch")
   branch_without_origin=$(echo "$branch" | sed 's/^origin\/\(.*\)/\1/')
   echo_in_bold_and_run "git push origin :$branch_without_origin"
-  echo "$return_value"
+  echo "$return_value (was $sha)"
   if local_branch_exists $branch_without_origin; then
     echo_in_bold_and_run "git branch -d $branch_without_origin"
     echo "$return_value"
