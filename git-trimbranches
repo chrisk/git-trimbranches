@@ -25,7 +25,7 @@ function local_branch_exists {
 echo_in_bold_and_run 'git fetch'
 echo_in_bold_and_run 'git remote prune origin'
 
-echo_in_bold_and_run 'git branch -r --merged origin/master | egrep -v -w "master|staging|production|stable"'
+echo_in_bold_and_run 'git branch -r --merged origin/master | egrep -v "master|staging|production|stable"'
 remote_branches="$return_value"
 merged_remote_branch_count=$(echo "$remote_branches" | wc -w | sed 's/ //g')
 echo "Found $merged_remote_branch_count branches on origin which are already contained in origin/master."
