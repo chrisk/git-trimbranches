@@ -1,11 +1,13 @@
 #!/bin/bash
 #
 # git-trimbranches
-# Removes branches on origin that are subsets of origin/master, then also
+# Removes branches on a remote that are subsets of its master branch, then also
 # deletes local copies of those branches if they exist. Handy for removing old
 # topic branches that you've already merged.
 #
-# It skips branches on the remote called master, staging, production, or stable.
+# It operates on the remote tracked by your local master branch (usually
+# 'origin'), and skips branches with names containing the words master,
+# staging, production, or stable.
 #
 # Usage:
 #   git trimbranches
@@ -23,21 +25,25 @@ function local_branch_exists {
 
 
 echo_in_bold_and_run 'git fetch'
-echo_in_bold_and_run 'git remote prune origin'
 
-echo_in_bold_and_run 'git branch -r --merged origin/master | egrep -v "master|staging|production|stable"'
+echo_in_bold_and_run 'git config --get branch.master.remote'
+remote="$return_value"
+
+echo_in_bold_and_run "git remote prune $remote"
+
+echo_in_bold_and_run "git branch -r --merged $remote/master | grep '^  $remote/' | egrep -v 'master|staging|production|stable'"
 remote_branches="$return_value"
 merged_remote_branch_count=$(echo "$remote_branches" | wc -w | sed 's/ //g')
-echo "Found $merged_remote_branch_count branches on origin which are already contained in origin/master."
+echo "Found $merged_remote_branch_count branches on $remote which are already contained in $remote/master."
 echo
 
 for branch in $remote_branches; do
   sha=$(git rev-parse --short "$branch")
-  branch_without_origin=$(echo "$branch" | sed 's/^origin\/\(.*\)/\1/')
-  echo_in_bold_and_run "git push origin :$branch_without_origin"
+  branch_without_remote_prefix=$(echo "$branch" | sed "s/^$remote\/\(.*\)/\1/")
+  echo_in_bold_and_run "git push $remote :$branch_without_remote_prefix"
   echo "$return_value (was $sha)"
-  if local_branch_exists $branch_without_origin; then
-    echo_in_bold_and_run "git branch -d $branch_without_origin"
+  if local_branch_exists $branch_without_remote_prefix; then
+    echo_in_bold_and_run "git branch -d $branch_without_remote_prefix"
     echo "$return_value"
   fi
 done
