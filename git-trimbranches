@@ -8,7 +8,7 @@
 # Since this modifies the remote based on your remote branches, it's probably a
 # good idea to fetch first.
 #
-# It skips branches on the remote called master, staging, or production.
+# It skips branches on the remote called master, staging, production, or stable.
 #
 # Usage:
 #   git trimbranches
@@ -24,7 +24,7 @@ function local_branch_exists {
   return $?
 }
 
-echo_in_bold_and_run 'git branch -r --merged origin/master | egrep -v -w "master|staging|production"'
+echo_in_bold_and_run 'git branch -r --merged origin/master | egrep -v -w "master|staging|production|stable"'
 remote_branches="$return_value"
 merged_remote_branch_count=$(echo "$remote_branches" | wc -w | sed 's/ //g')
 echo "Found $merged_remote_branch_count branches on origin which are already contained in origin/master."
