@@ -5,9 +5,6 @@
 # deletes local copies of those branches if they exist. Handy for removing old
 # topic branches that you've already merged.
 #
-# Since this modifies the remote based on your remote branches, it's probably a
-# good idea to fetch first.
-#
 # It skips branches on the remote called master, staging, production, or stable.
 #
 # Usage:
@@ -23,6 +20,10 @@ function local_branch_exists {
   git branch | grep "$1" > /dev/null
   return $?
 }
+
+
+echo_in_bold_and_run 'git fetch'
+echo_in_bold_and_run 'git remote prune origin'
 
 echo_in_bold_and_run 'git branch -r --merged origin/master | egrep -v -w "master|staging|production|stable"'
 remote_branches="$return_value"
