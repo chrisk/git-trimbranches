@@ -1,0 +1,11 @@
+#!/bin/bash
+#
+# git-trimbranches
+# Removes branches that are subsets of the current branch. Handy for removing
+# old topic branches that you've already merged.
+#
+# Usage:
+#   git trimbranches
+#
+
+git branch --merged | xargs git branch -d
