@@ -1,11 +1,41 @@
 #!/bin/bash
 #
 # git-trimbranches
-# Removes branches that are subsets of the current branch. Handy for removing
-# old topic branches that you've already merged.
+# Removes branches on origin that are subsets of origin/master, then also
+# deletes local copies of those branches if they exist. Handy for removing old
+# topic branches that you've already merged.
+#
+# Since this modifies the remote based on your remote branches, it's probably a
+# good idea to fetch first.
+#
+# It skips branches on the remote called master, staging, or production.
 #
 # Usage:
 #   git trimbranches
 #
 
-git branch --merged | xargs git branch -d
+function echo_in_bold_and_run {
+  printf "\033[1m%s\033[0m\n" "$1"
+  return_value=$(eval "$1 2>&1")
+}
+
+function local_branch_exists {
+  git branch | grep "$1" > /dev/null
+  return $?
+}
+
+echo_in_bold_and_run 'git branch -r --merged origin/master | egrep -v -w "master|staging|production"'
+remote_branches="$return_value"
+merged_remote_branch_count=$(echo "$remote_branches" | wc -w | sed 's/ //g')
+echo "Found $merged_remote_branch_count branches on origin which are already contained in origin/master."
+echo
+
+for branch in $remote_branches; do
+  branch_without_origin=$(echo "$branch" | sed 's/^origin\/\(.*\)/\1/')
+  echo_in_bold_and_run "git push origin :$branch_without_origin"
+  echo "$return_value"
+  if local_branch_exists $branch_without_origin; then
+    echo_in_bold_and_run "git branch -d $branch_without_origin"
+    echo "$return_value"
+  fi
+done
